@@ -1,0 +1,12 @@
+#Train neural network with data set with 100 items
+
+[files]
+in = "./examples/mnist_train_100.csv"
+out = "./examples/trained100.toml"
+overwrite = true
+
+[nn]
+inputNodes = 784
+hiddenNodes = 100
+outputNodes = 10
+learningRate = 0.3
