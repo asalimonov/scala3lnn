@@ -35,11 +35,12 @@ object Main extends App {
             val outputNodes = c.getLong("nn.outputNodes").toInt
             val learningRate = c.getDouble("nn.learningRate")
 
+            val dir = config.getParent
             val inFile = c.getString("files.in")
 
-            val nn: NeuralNetwork = new NeuralNetwork(inputNodes, hiddenNodes, outputNodes)
+            val nn = new NeuralNetwork(inputNodes, hiddenNodes, outputNodes)
 
-            val lines = Source.fromFile(new File(inFile)).getLines()
+            val lines = Source.fromFile(new File(s"${dir}/${inFile}")).getLines()
             for (line <- lines) {
                 val allValues = line.split(',')
                 val inputs = allValues.drop(1).map(_.toInt).map(_.toDouble / 255 * 0.99 + 0.01)
@@ -58,6 +59,8 @@ object Main extends App {
             case Right(c) => {
                 logger.trace(c.toString)
                 try {
+
+                    val dir = config.getParent
                     val nn = trainNeuralNetwork(c)
                     val outFile = c.getString("files.out")
                     val overwrite = c.getBoolean("files.overwrite", false)
@@ -67,7 +70,7 @@ object Main extends App {
                     trained.nn.put("hiddenNodes", nn.hiddenNodes.asInstanceOf[AnyRef])
                     trained.nn.put("outputNodes", nn.outputNodes.asInstanceOf[AnyRef])
 
-                    val tomlFile = new File(outFile)
+                    val tomlFile = new File(s"${dir}/${outFile}")
                     val outDir = tomlFile.getParent
                     val mxFile0 = tomlFile.getName + ".wih.csv"
                     val mxFile1 = tomlFile.getName + ".who.csv"
@@ -80,7 +83,7 @@ object Main extends App {
                         breeze.linalg.csvwrite(new File(s"$outDir/$mxFile0"), nn.weightsInputHidden, separator = ',')
                         breeze.linalg.csvwrite(new File(s"$outDir/$mxFile1"), nn.weightsHiddenOutput, separator = ',')
 
-                        new PrintWriter(outFile) {
+                        new PrintWriter(s"${dir}/${outFile}") {
                             write(tomlWriter.write(trained))
                             close
                         }
